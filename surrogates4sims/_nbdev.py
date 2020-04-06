@@ -10,12 +10,19 @@ index = {"loadfile": "01_datasets.ipynb",
          "convTransBlock": "02_models.ipynb",
          "Generator": "02_models.ipynb",
          "Encoder": "02_models.ipynb",
+         "Encoder_LK": "02_models.ipynb",
+         "Decoder_LK": "02_models.ipynb",
+         "AE_LK": "02_models.ipynb",
          "AE_no_P": "02_models.ipynb",
          "AE_xhat_z": "02_models.ipynb",
          "AE_xhat_zV2": "02_models.ipynb",
+         "ConvDeconv": "02_models.ipynb",
+         "ConvDeconvFactor2": "02_models.ipynb",
          "GeneratorOld": "02_models.ipynb",
-         "trainEpoch": "03_train_master.ipynb",
-         "validEpoch": "03_train_master.ipynb",
+         "trainEpoch": "03_train_LK.ipynb",
+         "validEpoch": "03_train_LK.ipynb",
+         "silu": "04_utils.ipynb",
+         "SiLU": "04_utils.ipynb",
          "create_opt": "04_utils.ipynb",
          "create_one_cycle": "04_utils.ipynb",
          "find_lr": "04_utils.ipynb",
@@ -31,12 +38,14 @@ index = {"loadfile": "01_datasets.ipynb",
          "stream2uv": "04_utils.ipynb",
          "show": "04_utils.ipynb",
          "convertSimToImage": "04_utils.ipynb",
-         "create_movie": "04_utils.ipynb"}
+         "create_movie": "04_utils.ipynb",
+         "MantaFlowSVDDataset": "05_experiment_SVD.ipynb"}
 
 modules = ["datasets.py",
            "models.py",
            "train.py",
-           "utils.py"]
+           "utils.py",
+           "svd.py"]
 
 git_url = "https://github.com/dwidemann/surrogates4sims/tree/master/"
 
