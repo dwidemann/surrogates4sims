@@ -13,59 +13,69 @@ import numpy as np
 import matplotlib.pyplot as plt
 from .utils import rmse, create_movie, convertSimToImage
 from tqdm import tqdm
+import pickle
 
 #Cell
 class MantaFlowSVDDataset(Dataset):
     def __init__(self,
+                 simFrames,
                  svdFile = '/home/widemann1/surrogates4sims/svd_out.npz',
-                 simFrames = tr,
                  numToKeep=np.infty,numComponents=512,transform=None, preprocess=True):
-        if type(simFrames) == list:
-            self.simFrames = simFrames
+
+        if '.pkl' in simFrames:
+            with open(simFrames,'rb') as fid:
+                self.data = pickle.load(fid)
+            if numToKeep < len(self.data):
+                self.data = self.data[:numToKeep]
         else:
-            self.simFrames = glob(os.path.join(simFrames,'*.npz'))
-        self.numToKeep = numToKeep
-        self.transform = transform
-        self.svdFile = svdFile
-        self.numComponents = numComponents
-        self.simLen = 200
+            if type(simFrames) == list:
+                self.simFrames = simFrames
+            else:
+                self.simFrames = glob(os.path.join(simFrames,'*.npz'))
 
-        out = np.load(svdFile)
-        self.vh = out['arr_2'][:numComponents]
+            self.numToKeep = numToKeep
+            self.transform = transform
+            self.svdFile = svdFile
+            self.numComponents = numComponents
+            self.simLen = 200
 
-        self.sims = []
-        for i in range(len(self.simFrames)//self.simLen):
-            sim = getSingleSim(i)
-            self.sims.append(sim)
+            out = np.load(svdFile)
+            self.vh = out['arr_2'][:numComponents]
 
-        tmp = []
+            self.sims = []
+            for i in range(len(self.simFrames)//self.simLen):
+                sim = getSingleSim(i)
+                self.sims.append(sim)
 
-        if numToKeep < len(self.sims):
-            self.sims = self.sims[:numToKeep]
+            tmp = []
 
-        for sim in tqdm(self.sims):
-            coeff_data = []
-            for f in sim:
-                X,y = self.loadfile(f)
+            if numToKeep < len(self.sims):
+                self.sims = self.sims[:numToKeep]
 
-                if preprocess:
-                    X,y = self.preprocessFcn(X,y)
-                X = X.reshape(-1,1)
-                coeffs = (self.vh@X).squeeze()
-                #print(coeffs.shape)
-                #print(y.shape)
-                coeff_data.append((coeffs,y))
+            for sim in tqdm(self.sims):
+                coeff_data = []
+                for f in sim:
+                    X,y = self.loadfile(f)
 
-            diff_data = []
-            for idx,c in enumerate(coeff_data[:-1]):
-                #print(c)
-                X0,y0 = c
-                X1,y1 = coeff_data[idx+1]
-                X = (X0,y1-y0)
-                diff_data.append((X,X1))
-            tmp.append(diff_data)
+                    if preprocess:
+                        X,y = self.preprocessFcn(X,y)
+                    X = X.reshape(-1,1)
+                    coeffs = (self.vh@X).squeeze()
+                    #print(coeffs.shape)
+                    #print(y.shape)
+                    coeff_data.append((coeffs,y))
 
-        self.data = [i for sublist in tmp for i in sublist]
+                diff_data = []
+                for idx,c in enumerate(coeff_data[:-1]):
+                    #print(c)
+                    X0,y0 = c
+                    X1,y1 = coeff_data[idx+1]
+                    X = np.concatenate([X0,y1-y0])
+                    #print(X.shape)
+                    diff_data.append((X,X1))
+                tmp.append(diff_data)
+
+            self.data = [i for sublist in tmp for i in sublist]
 
     def loadfile(self,fn):
         A = np.load(fn)
@@ -84,33 +94,6 @@ class MantaFlowSVDDataset(Dataset):
 
     def __len__(self):
         return len(self.data)
-
-    def plot(self,idx,savefig=False):
-        X, label  = self.data[idx]
-        if self.reverseXY:
-            X = label
-
-        plt.figure(figsize=(20,10))
-
-        plt.subplot(211)
-        fn = self.files[idx].replace('.npz','')
-        title = '{} channel 0'.format(fn)
-        plt.title(title)
-        plt.imshow(X[0])
-        plt.colorbar()
-
-        plt.subplot(212)
-        title = '{} channel 1'.format(fn)
-        plt.title(title)
-        plt.imshow(X[1])
-        plt.colorbar()
-
-        if savefig:
-            title = title.replace(' ','_') + '.png'
-            plt.savefig(title, dpi=300)
-            plt.close()
-        else:
-            plt.show()
 
     def __getitem__(self, idx):
         X,y = self.data[idx]

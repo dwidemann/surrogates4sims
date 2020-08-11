@@ -2,7 +2,7 @@
 
 __all__ = ['silu', 'SiLU', 'create_opt', 'create_one_cycle', 'find_lr', 'printNumModelParams', 'calcAccuracy', 'rmse',
            'writeMessage', 'plotSample', 'plotSampleWpredictionByChannel', 'plotSampleWprediction', 'curl', 'jacobian',
-           'stream2uv', 'show', 'convertSimToImage', 'create_movie']
+           'stream2uv', 'show', 'convertSimToImage', 'create_movie', 'pkl_save', 'pkl_load']
 
 #Cell
 import torch
@@ -16,7 +16,7 @@ from torchvision.utils import make_grid, save_image
 import matplotlib.animation as manimati
 from matplotlib import animation, rc
 from IPython.display import HTML
-
+import pickle
 
 def silu(input):
     '''
@@ -254,3 +254,13 @@ def create_movie(Xrgb,outfile='sim.mp4'):
     anim = animation.FuncAnimation(fig, animate, init_func=init,
                                    frames=len(Xrgb), interval=20, blit=True)
     anim.save(outfile, fps=30, extra_args=['-vcodec', 'libx264'])
+
+
+def pkl_save(D,fn):
+    with open(fn,'wb') as fid:
+        pickle.dump(D,fid)
+
+def pkl_load(fn):
+    with open(fn,'rb') as fid:
+        D = pickle.load(fid)
+        return D

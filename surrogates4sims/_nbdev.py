@@ -19,8 +19,8 @@ index = {"loadfile": "01_datasets.ipynb",
          "ConvDeconv": "02_models.ipynb",
          "ConvDeconvFactor2": "02_models.ipynb",
          "GeneratorOld": "02_models.ipynb",
-         "trainEpoch": "03_train_LK.ipynb",
-         "validEpoch": "03_train_LK.ipynb",
+         "trainEpoch": "10_train_wavedata.ipynb",
+         "validEpoch": "10_train_wavedata.ipynb",
          "silu": "04_utils.ipynb",
          "SiLU": "04_utils.ipynb",
          "create_opt": "04_utils.ipynb",
@@ -39,13 +39,25 @@ index = {"loadfile": "01_datasets.ipynb",
          "show": "04_utils.ipynb",
          "convertSimToImage": "04_utils.ipynb",
          "create_movie": "04_utils.ipynb",
-         "MantaFlowSVDDataset": "05_experiment_SVD.ipynb"}
+         "pkl_save": "04_utils.ipynb",
+         "pkl_load": "04_utils.ipynb",
+         "MantaFlowSVDDataset": "05_experiment_SVD.ipynb",
+         "get_initial_conditions": "generate_wave_eqn_data.ipynb",
+         "plot_image": "generate_wave_eqn_data.ipynb",
+         "Laplacian": "generate_wave_eqn_data.ipynb",
+         "batchLaplacian": "generate_wave_eqn_data.ipynb",
+         "run_wave_forward": "generate_wave_eqn_data.ipynb",
+         "generate_wave_data": "generate_wave_eqn_data.ipynb",
+         "WaveDataset": "generate_wave_eqn_data.ipynb",
+         "wave_loss": "generate_wave_eqn_data.ipynb"}
 
 modules = ["datasets.py",
            "models.py",
            "train.py",
            "utils.py",
-           "svd.py"]
+           "svd.py",
+           "wave_training.py",
+           "wave_equation.py"]
 
 git_url = "https://github.com/dwidemann/surrogates4sims/tree/master/"
 

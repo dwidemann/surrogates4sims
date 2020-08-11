@@ -80,13 +80,13 @@ class MantaFlowDataset(Dataset):
         fn = self.files[idx].replace('.npz','')
         title = '{} channel 0'.format(fn)
         plt.title(title)
-        plt.imshow(X[0])
+        plt.imshow(X[0][::-1])
         plt.colorbar()
 
         plt.subplot(212)
         title = '{} channel 1'.format(fn)
         plt.title(title)
-        plt.imshow(X[1])
+        plt.imshow(X[1][::-1])
         plt.colorbar()
 
         if savefig:
