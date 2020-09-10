@@ -2,7 +2,8 @@
 
 __all__ = ['silu', 'SiLU', 'create_opt', 'create_one_cycle', 'find_lr', 'printNumModelParams', 'calcAccuracy', 'rmse',
            'writeMessage', 'plotSample', 'plotSampleWpredictionByChannel', 'plotSampleWprediction', 'curl', 'jacobian',
-           'stream2uv', 'show', 'convertSimToImage', 'create_movie', 'pkl_save', 'pkl_load']
+           'stream2uv', 'show', 'convertSimToImage', 'create_movie', 'pkl_save', 'pkl_load', 'computeSpatialandTimePOD',
+           'reconFrame']
 
 #Cell
 import torch
@@ -17,7 +18,9 @@ import matplotlib.animation as manimati
 from matplotlib import animation, rc
 from IPython.display import HTML
 import pickle
+from numpy.linalg import svd
 
+#Cell
 def silu(input):
     '''
     Applies the Sigmoid Linear Unit (SiLU) function element-wise:
@@ -228,9 +231,8 @@ def convertSimToImage(X):
     return Xrgb
 
 
-def create_movie(Xrgb,outfile='sim.mp4'):
+def create_movie(Xrgb,outfile='sim.mp4',title='surrogate            simulation'):
     ti = 0
-    title = 'sim'
     u_mx = 255 #np.max(np.abs(Xrgb))
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -256,6 +258,10 @@ def create_movie(Xrgb,outfile='sim.mp4'):
     anim.save(outfile, fps=30, extra_args=['-vcodec', 'libx264'])
 
 
+
+
+
+#Cell
 def pkl_save(D,fn):
     with open(fn,'wb') as fid:
         pickle.dump(D,fid)
@@ -264,3 +270,35 @@ def pkl_load(fn):
     with open(fn,'rb') as fid:
         D = pickle.load(fid)
         return D
+
+#Cell
+def computeSpatialandTimePOD(data,simLen,doPlot=False):
+    # data should of size numFrames x vecLength
+    # the columns of spatialVecs are the spatial PODs
+    # the rows of timeVecs are the temporal PODs
+    numSamps = len(data)
+    data = data.reshape(numSamps,-1)
+    spatialVecs,S,vh = svd(data.T,full_matrices=False)
+    s_cum = np.cumsum(S/np.sum(S))
+    if doPlot:
+        plt.plot(s_cum)
+        plt.show()
+    numSims = vh.shape[1]//simLen
+    tt = vh.reshape(numSims*len(vh),simLen)
+    timeVecs,b,c = svd(tt.T,full_matrices=False)
+    s_cum = np.cumsum(b/np.sum(b))
+    if doPlot:
+        plt.plot(s_cum)
+        plt.show()
+    return spatialVecs, S, timeVecs.T
+
+def reconFrame(u,frame,numComp=512):
+    # u is from u,s,vh = svd(data)
+    # frame = channels x height x width
+    x = frame.reshape(1,frame.size)
+    coeffs = (x@u[:,:numComp]).flatten()
+    R = np.zeros(x.shape)
+    for idx, c in enumerate(coeffs):
+        R += c*u[:,idx]
+    R = R.reshape(frame.shape)
+    return R
