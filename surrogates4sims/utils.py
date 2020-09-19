@@ -2,8 +2,8 @@
 
 __all__ = ['silu', 'SiLU', 'create_opt', 'create_one_cycle', 'find_lr', 'printNumModelParams', 'calcAccuracy', 'rmse',
            'writeMessage', 'plotSample', 'plotSampleWpredictionByChannel', 'plotSampleWprediction', 'curl', 'jacobian',
-           'stream2uv', 'show', 'convertSimToImage', 'create_movie', 'pkl_save', 'pkl_load', 'computeSpatialandTimePOD',
-           'reconFrame']
+           'stream2uv', 'show', 'convertSimToImage', 'create_movie', 'create_1_channel_movie', 'make_PNNL_movie',
+           'pkl_save', 'pkl_load', 'computeSpatialandTimePOD', 'reconFrame']
 
 #Cell
 import torch
@@ -101,7 +101,10 @@ def calcAccuracy(preds, labels):
 def rmse(preds, labels):
     d = (preds - labels)**2
     d = d.mean()
-    r = d.sqrt()
+    try:
+        r = d.sqrt()
+    except:
+        r = np.sqrt(d)
     return r
 
 def writeMessage(msg, versionName):
@@ -259,7 +262,40 @@ def create_movie(Xrgb,outfile='sim.mp4',title='surrogate            simulation')
 
 
 
+def create_1_channel_movie(im,outfile='sim.mp4',title='surrogate            simulation'):
+    ti = 0
+    u_mx = 255 #np.max(np.abs(Xrgb))
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    plt.title(title)
+    cmap = plt.cm.RdYlBu
+    img = ax.imshow(im[0].squeeze(), cmap=cmap, vmin=0, vmax=u_mx)
+    #plt.show()
 
+    # initialization function: plot the background of each frame
+    def init():
+        img = ax.imshow(im[0].squeeze(), cmap=cmap, vmin=0, vmax=u_mx)
+        return (fig,)
+
+    # animation function. This is called sequentially
+    def animate(i):
+        img = ax.imshow(im[i].squeeze(), cmap=cmap, vmin=0, vmax=u_mx)
+        return (fig,)
+
+
+    # call the animator. blit=True means only re-draw the parts that have changed.
+    anim = animation.FuncAnimation(fig, animate, init_func=init,
+                                   frames=len(im), interval=20, blit=True)
+    anim.save(outfile, fps=30, extra_args=['-vcodec', 'libx264'])
+
+def make_PNNL_movie(surr, real, title='surrogate                    simulation', outfile='sim.mp4'):
+    surr = surr.squeeze()
+    surr = np.array(list(map(np.rot90,surr)))
+    real = real.squeeze()
+    real = np.array(list(map(np.rot90,real)))
+    out = np.concatenate([surr,real],axis=2)
+    im = convertSimToImage(torch.tensor(out))
+    create_1_channel_movie(im,outfile=outfile,title=title)
 
 #Cell
 def pkl_save(D,fn):
@@ -301,4 +337,4 @@ def reconFrame(u,frame,numComp=512):
     for idx, c in enumerate(coeffs):
         R += c*u[:,idx]
     R = R.reshape(frame.shape)
-    return R
+    return R, coeffs

@@ -85,7 +85,8 @@ class CCSI_2D(Dataset):
     def __init__(self,
                  dataDirec='/data/ccsi/PNNLTimeStepData/001a/',
                  numToKeep=np.infty,transform=None,preprocess=True,
-                 Nx=None,Ny=None,delta_x=None,nextPow2=True,interpMethod='linear'):
+                 Nx=None,Ny=None,delta_x=None,nextPow2=True,interpMethod='linear',
+                 channel=None):
 
         self.data = []
         self.files = []
@@ -97,6 +98,7 @@ class CCSI_2D(Dataset):
         self.grid_y = []
         self.preprocess = preprocess
         self.interpMethod = interpMethod
+        self.channel = channel
 
         if type(dataDirec) == list:
             self.files = dataDirec
@@ -194,6 +196,10 @@ class CCSI_2D(Dataset):
 
     def __getitem__(self, idx):
         X  = self.data[idx].astype('float32')
+        if self.channel is not None:
+            X = X[self.channel,:,:]
+            X = X[np.newaxis]
+
         if self.transform is not None:
             X = self.transform(X)
         return X,X # this allows LR_finder to work
