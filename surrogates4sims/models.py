@@ -87,7 +87,7 @@ class Generator(nn.Module):
             repeat_num = int(np.log2(torch.max(output_shape[1:]))) - 2
         else:
             repeat_num = repeat
-        x0_shape = [filters] + [int(i/np.power(2, repeat_num-1)) for i in output_shape[1:]]
+        x0_shape = [filters] + [i//np.power(2, repeat_num-1) for i in output_shape[1:]]
         self.x0_shape = x0_shape
         self.output_shape = output_shape
         self.filters = filters
@@ -459,7 +459,7 @@ class GeneratorOld(nn.Module):
             repeat_num = int(np.log2(torch.max(output_shape[1:]))) - 2
         else:
             repeat_num = repeat
-        x0_shape = [filters] + [int(i/np.power(2, repeat_num-1)) for i in output_shape[1:]]
+        x0_shape = [filters] + [i//np.power(2, repeat_num-1) for i in output_shape[1:]]
         self.x0_shape = x0_shape
         num_output = int(np.prod(x0_shape))
         self.linear = nn.Linear(z.shape[1], num_output)
