@@ -216,7 +216,7 @@ def main(args):
 
     results = {"LIN_z_mean_rel_error": Err,
                "svd_rel_err": svd_rel_err,
-               "lin_rel_err": rel_err_lin}
+               "lin_rel_err": lin_rel_err}
     pickle.dump(results, open(os.path.join(tensorboard_direc,versionName_with_args,"results.p"), "wb"))
 
 
