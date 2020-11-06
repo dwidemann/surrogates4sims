@@ -101,7 +101,7 @@ class CCSI_2D(Dataset):
         self.channel = channel
         self.gridSize = gridSize
         self.numToKeep = numToKeep
-        self.simLen = 500
+        self.simLen = simLen
         self.t = np.linspace(0,1,simLen).astype('float32')
         self.w = w
         self.AE = AE
@@ -184,12 +184,15 @@ class CCSI_2D(Dataset):
             x = self.preprocessFcn(x)
             y = self.preprocessFcn(y)
 
-        X = (x.astype('float32'),p,self.t[r_idx])
-        Y = (y.astype('float32'),p,self.t[r_idx+1:r_idx+self.w+1])
+        y = np.expand_dims(y,1)
+        p_x = np.hstack([p,self.t[r_idx]])
+        p_y = np.vstack([p*np.ones((self.w,)),self.t[r_idx+1:r_idx+self.w+1]]).T
+        X = x.astype('float32')
+        Y = y.astype('float32')
         if self.AE:
-            return X[0],X[0] # this allows LR_finder to work
+            return X,X # this allows LR_finder to work
         else:
-            return X,Y
+            return X, Y, p_x, p_y
 
 
 
