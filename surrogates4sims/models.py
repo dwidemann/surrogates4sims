@@ -83,7 +83,7 @@ class convTransBlock(nn.Module):
 class Generator(nn.Module):
     def __init__(self,z, filters, output_shape,
                  num_conv=4, conv_k=3, last_k=3, repeat=0,
-                 skip_connection=False, act=nn.LeakyReLU(),stack=False, norm=nn.BatchNorm2d):
+                 skip_connection=False, act=nn.LeakyReLU(),stack=False, norm=nn.BatchNorm2d, sigmoid_out=False):
         super(Generator,self).__init__()
         if repeat == 0:
             repeat_num = int(np.log2(torch.max(output_shape[1:]))) - 2
@@ -113,7 +113,11 @@ class Generator(nn.Module):
             n = ch
         else:
             n = filters
-        self.lastConv = nn.Conv2d(n,int(output_shape[0]),kernel_size=3, stride=1,padding=1)
+        if sigmoid_out:
+            self.lastConv = nn.Sequential(nn.Conv2d(n,int(output_shape[0]),kernel_size=3, stride=1,padding=1),
+                                          nn.Sigmoid())
+        else:
+            self.lastConv = nn.Conv2d(n,int(output_shape[0]),kernel_size=3, stride=1,padding=1)
         self.skip_connection = skip_connection
         self.stack = stack
 
@@ -265,8 +269,8 @@ class AE_xhat_z(nn.Module):
 
 class AE_xhat_zV2(nn.Module):
     def __init__(self, X, filters=32, latentDim=16, num_conv=2, repeat=0,
-                 skip_connection=False, stack=False, conv_k=3, last_k=3,
-                 act=nn.LeakyReLU, return_z=True, stream=True, device='cpu', norm = nn.BatchNorm2d):
+                 skip_connection=False, stack=False, conv_k=3, last_k=3, act=nn.LeakyReLU,
+                 return_z=True, stream=True, device='cpu', norm = nn.BatchNorm2d, sigmoid_out=False):
         super(AE_xhat_zV2,self).__init__()
 
         self.filters = filters
@@ -293,8 +297,8 @@ class AE_xhat_zV2(nn.Module):
             self.output_shape = torch.tensor(X[0].shape)
 
         self.generator = Generator(z, filters, self.output_shape,
-                                   num_conv, conv_k, last_k, repeat,
-                                   skip_connection, act=act, stack=stack, norm=norm).to(device)
+                                   num_conv, conv_k, last_k, repeat, skip_connection, act=act,
+                                   stack=stack, norm=norm, sigmoid_out=sigmoid_out).to(device)
 
     def forward(self, x, p_x):
         z = self.encoder(x)
